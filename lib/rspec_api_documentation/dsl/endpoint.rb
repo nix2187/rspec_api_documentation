@@ -8,6 +8,8 @@ module RspecApiDocumentation::DSL
     extend ActiveSupport::Concern
     include Rack::Test::Utils
 
+    URL_PARAMS_REGEX = /[:\{](\w+)\}?/.freeze
+
     delegate :response_headers, :response_status, :response_body, :to => :rspec_api_documentation_client
 
     module ClassMethods
@@ -104,11 +106,11 @@ module RspecApiDocumentation::DSL
     end
 
     def path_params
-      example.metadata[:route].scan(/:(\w+)/).flatten
+      example.metadata[:route].scan(URL_PARAMS_REGEX).flatten
     end
 
     def path
-      example.metadata[:route].gsub(/:(\w+)/) do |match|
+      example.metadata[:route].gsub(URL_PARAMS_REGEX) do |match|
         if extra_params.keys.include?($1)
           delete_extra_param($1)
         elsif respond_to?($1)
